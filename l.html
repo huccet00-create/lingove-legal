@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- The list lives in the fragment (#water,serendipity): it never reaches this
+     server, and the page only reads it in the browser. -->
+<script>
+  // Safari's banner: "Get" for those without the app, "Open" for those with it,
+  // and the open carries the list in (SharedList.ids, lingove://list#...).
+  document.write('<meta name="apple-itunes-app" content="app-id=6819282813, app-argument=lingove://list'
+    + location.hash.replace(/"/g, '') + '">');
+</script>
+<style>
+  :root { --bg:#FBFAFF; --ink:#1E1730; --body:#3E3752; --muted:#7A7390; --primary:#5B3FB5; --border:#E6E1F2; --chip:#F1EDFB; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#14101F; --ink:#F2EEFF; --body:#C9C2DD; --muted:#8E87A6; --primary:#B9A6FF; --border:#2C2540; --chip:#211A33; }
+  }
+  body { margin:0; background:var(--bg); color:var(--ink); font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; line-height:1.5; }
+  .wrap { max-width:560px; margin:0 auto; padding:32px 16px 56px; }
+  .brand { font-weight:800; font-size:18px; color:var(--primary); margin-bottom:28px; display:inline-block; text-decoration:none; }
+  h1 { font-family:"New York",ui-serif,Georgia,serif; font-size:30px; font-weight:600; margin:0 0 4px; line-height:1.2; }
+  .count { color:var(--muted); font-size:14px; margin:0 0 20px; }
+  .words { display:flex; flex-wrap:wrap; gap:8px; margin:0 0 28px; padding:0; list-style:none; }
+  .words li { background:var(--chip); border:1px solid var(--border); border-radius:999px; padding:6px 12px; font-size:15px; color:var(--ink); }
+  .btn { display:block; text-align:center; text-decoration:none; font-weight:600; font-size:16px; border-radius:999px; padding:15px 20px; margin:0 0 10px; }
+  .primary { background:var(--primary); color:var(--bg); }
+  .secondary { border:1px solid var(--border); color:var(--ink); }
+  .hint { color:var(--muted); font-size:13.5px; text-align:center; margin:14px 0 0; }
+</style>
+<title>LingoVe</title>
+</head>
+<body>
+<div class="wrap">
+  <a class="brand" href="./">LingoVe</a>
+  <h1 id="title"></h1>
+  <p class="count" id="count"></p>
+  <ul class="words" id="words"></ul>
+  <a class="btn primary" id="open"></a>
+  <a class="btn secondary" id="get" href="https://apps.apple.com/app/id6819282813"></a>
+  <p class="hint" id="hint"></p>
+</div>
+<script>
+  var tr = (navigator.language || 'tr').toLowerCase().indexOf('tr') === 0;
+  var text = tr ? {
+    title: 'Sana bir kelime listesi geldi', empty: 'Bu link bir liste taşımıyor.',
+    count: function (n) { return n + ' kelime'; },
+    open: "LingoVe'de aç", get: "App Store'dan indir",
+    hint: 'LingoVe yüklü değilse önce indir, sonra bu linke yeniden dokun.'
+  } : {
+    title: 'Someone sent you a word list', empty: "This link doesn't carry a list.",
+    count: function (n) { return n + (n === 1 ? ' word' : ' words'); },
+    open: 'Open in LingoVe', get: 'Download on the App Store',
+    hint: "If LingoVe isn't installed, download it first, then tap this link again."
+  };
+  document.documentElement.lang = tr ? 'tr' : 'en';
+
+  var raw = location.hash.slice(1);
+  var ids = raw.split(',').map(function (part) {
+    try { return decodeURIComponent(part); } catch (e) { return ''; }
+  }).filter(function (id) { return id.length > 0; });
+
+  // Patterns travel as "p:look forward to"; the reader sees the phrase.
+  var list = document.getElementById('words');
+  ids.forEach(function (id) {
+    var item = document.createElement('li');
+    item.textContent = id.replace(/^[a-z]+:/, '');
+    list.appendChild(item);
+  });
+
+  document.getElementById('title').textContent = ids.length ? text.title : text.empty;
+  document.getElementById('count').textContent = ids.length ? text.count(ids.length) : '';
+  var open = document.getElementById('open');
+  if (ids.length) {
+    open.textContent = text.open;
+    open.href = 'lingove://list#' + raw;
+  } else {
+    open.remove();
+  }
+  document.getElementById('get').textContent = text.get;
+  document.getElementById('hint').textContent = ids.length ? text.hint : '';
+</script>
+</body>
+</html>
